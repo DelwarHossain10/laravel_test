@@ -12,22 +12,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: shivammathur/setup-php@15c43e89cdef867065b0213be354c2841860869e
+    # Setup PHP with the specified version
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.0'
-    - uses: actions/checkout@v4
+        php-version: '8.1'
+
+    # Checkout repository
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # Copy the .env file if it doesn't exist
     - name: Copy .env
       run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+
+    # Check PHP and Composer versions (optional, for debugging purposes)
+    - name: Check PHP and Composer versions
+      run: |
+        php -v
+        composer -V
+
+    # Install Composer dependencies
     - name: Install Dependencies
       run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+    # Generate application key
     - name: Generate key
       run: php artisan key:generate
+
+    # Set directory permissions
     - name: Directory Permissions
       run: chmod -R 777 storage bootstrap/cache
+
+    # Create SQLite database
     - name: Create Database
       run: |
         mkdir -p database
         touch database/database.sqlite
+
+    # Run PHPUnit/Pest tests
     - name: Execute tests (Unit and Feature tests) via PHPUnit/Pest
       env:
         DB_CONNECTION: sqlite
